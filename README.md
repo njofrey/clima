@@ -1,17 +1,20 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Clima Vivo
 
-## Getting Started
+Una aplicación del tiempo visual y animada, construida con Next.js, Tailwind CSS y Framer Motion.
 
-First, run the development server:
+## Características
+
+- Clima actual basado en geolocalización o búsqueda por ciudad.
+- Pronóstico de 5 días y por horas.
+- Interfaz moderna con animaciones y fondos dinámicos.
+- Backend seguro con rutas de API y rate-limiting.
+
+## Empezar
+
+Primero, ejecuta el servidor de desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

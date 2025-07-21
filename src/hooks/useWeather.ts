@@ -16,8 +16,13 @@ export function useWeather() {
       const weatherRes = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
       const forecastRes = await fetch(`/api/forecast?lat=${lat}&lon=${lon}`);
 
-      if (!weatherRes.ok || !forecastRes.ok) {
-        throw new Error('Failed to fetch weather data');
+      if (!weatherRes.ok) {
+        const errorData = await weatherRes.json();
+        throw new Error(errorData.error || 'Failed to fetch weather data');
+      }
+      if (!forecastRes.ok) {
+        const errorData = await forecastRes.json();
+        throw new Error(errorData.error || 'Failed to fetch forecast data');
       }
 
       const weatherData = await weatherRes.json();
@@ -25,8 +30,8 @@ export function useWeather() {
 
       setWeather(weatherData);
       setForecast(forecastData);
-    } catch (err) {
-      setError('Error al obtener los datos del clima.');
+    } catch (err: any) {
+      setError(err.message);
       console.error(err);
     } finally {
       setLoading(false);
@@ -38,7 +43,10 @@ export function useWeather() {
     setError(null);
     try {
       const weatherRes = await fetch(`/api/weather?city=${city}`);
-      if (!weatherRes.ok) throw new Error('City not found');
+      if (!weatherRes.ok) {
+        const errorData = await weatherRes.json();
+        throw new Error(errorData.error || 'City not found');
+      }
       
       const weatherData = await weatherRes.json();
       setWeather(weatherData);
@@ -46,13 +54,16 @@ export function useWeather() {
       if (weatherData) {
         const { lat, lon } = weatherData.coord;
         const forecastRes = await fetch(`/api/forecast?lat=${lat}&lon=${lon}`);
-        if (!forecastRes.ok) throw new Error('Failed to fetch forecast');
+        if (!forecastRes.ok) {
+          const errorData = await forecastRes.json();
+          throw new Error(errorData.error || 'Failed to fetch forecast');
+        }
         
         const forecastData = await forecastRes.json();
         setForecast(forecastData);
       }
-    } catch (err) {
-      setError('No se pudo encontrar la ciudad.');
+    } catch (err: any) {
+      setError(err.message);
       console.error(err);
     } finally {
       setLoading(false);

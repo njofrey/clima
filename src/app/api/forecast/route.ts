@@ -20,16 +20,20 @@ export async function GET(request: Request) {
   }
 
   const url = `${API_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
+  
+  console.log(`Fetching URL: ${url}`); // LOG: Ver la URL que se está llamando
 
   try {
     const res = await fetch(url);
     if (!res.ok) {
       const errorData = await res.json();
-      return NextResponse.json({ error: 'Failed to fetch forecast data', details: errorData }, { status: res.status });
+      console.error('Error from OpenWeatherMap API:', errorData); // LOG: Ver el error específico de la API
+      return NextResponse.json({ error: `Failed to fetch forecast data: ${errorData.message}` }, { status: res.status });
     }
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {
+    console.error('Fetch failed:', error); // LOG: Ver si el fetch en sí mismo falla
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 

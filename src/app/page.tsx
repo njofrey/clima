@@ -1,16 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   getWeatherByCoords,
   getWeatherByCity,
   getForecastByCoords,
 } from '../lib/weather';
 import { WeatherData, ForecastData } from '../types';
-import CurrentWeather from '../components/CurrentWeather';
-import Search from '../components/Search';
-import Forecast from '../components/Forecast';
+import WeatherHeader from '../components/WeatherHeader';
+import WeatherMainCard from '../components/WeatherMainCard';
+import WeatherDetails from '../components/WeatherDetails';
+import BackgroundVisual from '../components/BackgroundVisual';
+import HourlyForecast from '../components/HourlyForecast';
+import WeeklyForecast from '../components/WeeklyForecast';
+import LoadingAnimation from '../components/LoadingAnimation';
 
 export default function Home() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -38,9 +42,9 @@ export default function Home() {
         fetchWeatherAndForecast(position.coords.latitude, position.coords.longitude);
       },
       (err) => {
-        setError('No se pudo acceder a la geolocalización.');
+        setError('No se pudo acceder a la geolocalización. Mostrando datos de Buenos Aires.');
         console.error(err);
-        setLoading(false);
+        handleSearch('Buenos Aires'); // Cargar ciudad por defecto
       }
     );
   }, []);
@@ -64,22 +68,45 @@ export default function Home() {
   };
 
   return (
-    <main className="flex flex-col items-center min-h-screen bg-gray-900 text-white p-4">
-      <div className="w-full max-w-md">
-        <h1 className="text-4xl font-bold text-center mb-4">Clima Vivo</h1>
-        <Search onSearch={handleSearch} />
-        {loading && <p className="text-center">Cargando...</p>}
-        {error && <p className="text-center text-red-500">{error}</p>}
-        <motion.div
+    <div className="relative min-h-screen bg-black text-white">
+      <AnimatePresence>
+        {loading && <LoadingAnimation />}
+      </AnimatePresence>
+
+      <BackgroundVisual weather={weather} />
+      <main className="relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] h-screen p-8 gap-8">
+        {/* Columna Izquierda */}
+        <motion.section
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="flex flex-col justify-between"
+        >
+          <WeatherHeader onSearch={handleSearch} />
+          <WeatherDetails weather={weather} />
+        </motion.section>
+
+        {/* Columna Central */}
+        <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="mt-4"
+          transition={{ duration: 0.8 }}
+          className="flex flex-col items-center justify-center text-center"
         >
-          {weather && <CurrentWeather data={weather} />}
-          {forecast && <Forecast data={forecast} />}
-        </motion.div>
-      </div>
-    </main>
+          <WeatherMainCard weather={weather} />
+          <HourlyForecast forecast={forecast} />
+        </motion.section>
+
+        {/* Columna Derecha: Pronóstico Semanal */}
+        <motion.section
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="flex items-end"
+        >
+          <WeeklyForecast forecast={forecast} />
+        </motion.section>
+      </main>
+    </div>
   );
 }

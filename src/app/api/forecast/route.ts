@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
+import { API_KEY, API_URL, ratelimit } from '../utils';
 
 export const runtime = 'nodejs';
 
-const API_KEY = process.env.OPENWEATHER_API_KEY;
-const API_URL = 'https://api.openweathermap.org/data/2.5';
-
 export async function GET(request: Request) {
+  const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
+  const { success } = await ratelimit.limit(ip);
+
+  if (!success) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const lat = searchParams.get('lat');
   const lon = searchParams.get('lon');

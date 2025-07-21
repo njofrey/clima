@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  env: {
-    OPENWEATHER_API_KEY: process.env.808ddab06405180386ea7ea4aefb3614,
-  },
+  // Dejamos este archivo limpio y sin configuraciones extra
+  // para asegurar la compatibilidad con el entorno de Vercel.
+  // Las variables de entorno se leen automáticamente.
 };
 
 export default nextConfig;

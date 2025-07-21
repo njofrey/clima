@@ -1,13 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  getWeatherByCoords,
-  getWeatherByCity,
-  getForecastByCoords,
-} from '../lib/weather';
-import { WeatherData, ForecastData } from '../types';
+import { useWeather } from '../hooks/useWeather';
 import WeatherHeader from '../components/WeatherHeader';
 import WeatherMainCard from '../components/WeatherMainCard';
 import WeatherDetails from '../components/WeatherDetails';
@@ -17,55 +11,7 @@ import WeeklyForecast from '../components/WeeklyForecast';
 import LoadingAnimation from '../components/LoadingAnimation';
 
 export default function Home() {
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [forecast, setForecast] = useState<ForecastData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchWeatherAndForecast = async (lat: number, lon: number) => {
-    try {
-      const weatherData = await getWeatherByCoords(lat, lon);
-      const forecastData = await getForecastByCoords(lat, lon);
-      setWeather(weatherData);
-      setForecast(forecastData);
-    } catch (err) {
-      setError('Error al obtener los datos del clima.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        fetchWeatherAndForecast(position.coords.latitude, position.coords.longitude);
-      },
-      (err) => {
-        setError('No se pudo acceder a la geolocalización. Mostrando datos de Buenos Aires.');
-        console.error(err);
-        handleSearch('Buenos Aires'); // Cargar ciudad por defecto
-      }
-    );
-  }, []);
-
-  const handleSearch = async (city: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const weatherData = await getWeatherByCity(city);
-      setWeather(weatherData);
-      if (weatherData) {
-        const forecastData = await getForecastByCoords(weatherData.coord.lat, weatherData.coord.lon);
-        setForecast(forecastData);
-      }
-    } catch (err) {
-      setError('No se pudo encontrar la ciudad.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { weather, forecast, loading, handleSearch } = useWeather();
 
   return (
     <div className="relative min-h-screen bg-black text-white">
@@ -75,7 +21,6 @@ export default function Home() {
 
       <BackgroundVisual weather={weather} />
       <main className="relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] h-screen p-8 gap-8">
-        {/* Columna Izquierda */}
         <motion.section
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -86,7 +31,6 @@ export default function Home() {
           <WeatherDetails weather={weather} />
         </motion.section>
 
-        {/* Columna Central */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -97,7 +41,6 @@ export default function Home() {
           <HourlyForecast forecast={forecast} />
         </motion.section>
 
-        {/* Columna Derecha: Pronóstico Semanal */}
         <motion.section
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
